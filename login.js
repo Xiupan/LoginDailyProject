@@ -17,34 +17,57 @@ app.listen(3000, function () {
   console.log('Successfully started Login application!');
 });
 
+var usernameInput = '';
+var passwordInput = '';
+
+// hardcoded database of users and passwords
+var userDatabase = { users : [
+  { username:"poop" , password:"butt" },
+  { username:"poop123" , password:"butts" },
+  { username:"unicorns" , password:"andrainbows" } ]};
+
 app.use(expressSession({
   secret: 'keyboard cat',
   resave: false,
   saveUninitialized: true
 }))
 
-app.use(function (req, res, next) {
-  var views = req.session.views
+// viewcount
+app.use(function (request, response, next) {
+  var views = request.session.views;
 
   if (!views) {
-    views = req.session.views = {}
+    views = request.session.views = {};
   }
 
-  var pathname = parseurl(req).pathname
-
-  views[pathname] = (views[pathname] || 0) + 1
-
-  next()
+  var pathName = parseUrl(request).pathname;
+  views[pathName] = (views[pathName] || 0) + 1;
+  next();
 })
 
 app.get('/', function(request, response){
-  response.render('index');
+  // console.log(userDatabase.users[0].username);
 })
 
-app.get('/foo', function (req, res, next) {
-  res.send('you viewed this page ' + req.session.views['/foo'] + ' times')
+app.post('/login', function(request, response){
+  usernameInput = request.body.username;
+  passwordInput = request.body.password;
+
+  request.session.user = usernameInput;
+  request.session.password = passwordInput;
+
+  for (var i = 0; i < userDatabase.users.length; i++) {
+    if(request.session.user === userDatabase.users[i].username && request.session.password === userDatabase.users[i].password){
+      response.render('login', {
+        usernameInput: usernameInput,
+        passwordInput: passwordInput
+      });
+    } else {
+      console.log('Incorrect username or password.');
+    }
+  }
 })
 
-app.get('/bar', function (req, res, next) {
-  res.send('you viewed this page ' + req.session.views['/bar'] + ' times')
+app.get('/login', function (request, response, next) {
+  response.render('login');
 })
