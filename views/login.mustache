@@ -9,8 +9,9 @@
       <input type="text" name="username" placeholder="Username">
       <input type="password" name="password" placeholder="Password">
       <button type="submit" name="submitButton">Submit</button>
+      {{#loginAttempt}}
+      <p>Incorrect username or password. Please login.</p>
+      {{/loginAttempt}}
     </form>
-    <p>{{usernameInput}}</p>
-    <p>{{passwordInput}}</p>
   </body>
 </html>

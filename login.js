@@ -20,6 +20,8 @@ app.listen(3000, function () {
 var usernameInput = '';
 var passwordInput = '';
 
+var loginAttempt = false;
+
 // hardcoded database of users and passwords
 var userDatabase = { users : [
   { username:"poop" , password:"butt" },
@@ -32,21 +34,21 @@ app.use(expressSession({
   saveUninitialized: true
 }))
 
-// viewcount
-app.use(function (request, response, next) {
-  var views = request.session.views;
-
-  if (!views) {
-    views = request.session.views = {};
+// initial redirect to login page. After successfully logging in, renders index.
+app.get('/', function(request, response){
+  if(loginAttempt === true){
+    response.render('index', {
+      loginAttempt: loginAttempt
+    });
+  } else {
+    response.redirect('/login');
   }
-
-  var pathName = parseUrl(request).pathname;
-  views[pathName] = (views[pathName] || 0) + 1;
-  next();
 })
 
-app.get('/', function(request, response){
-  // console.log(userDatabase.users[0].username);
+app.get('/login', function (request, response) {
+  response.render('login', {
+    loginAttempt: loginAttempt
+  });
 })
 
 app.post('/login', function(request, response){
@@ -56,18 +58,16 @@ app.post('/login', function(request, response){
   request.session.user = usernameInput;
   request.session.password = passwordInput;
 
+  // for loop to check user input of username and password against hardcoded database of users
   for (var i = 0; i < userDatabase.users.length; i++) {
     if(request.session.user === userDatabase.users[i].username && request.session.password === userDatabase.users[i].password){
-      response.render('login', {
-        usernameInput: usernameInput,
-        passwordInput: passwordInput
-      });
+      response.redirect('/');
     } else {
-      console.log('Incorrect username or password.');
+      loginAttempt = true;
+      response.redirect('login');
+      response.render('login', {
+        loginAttempt: loginAttempt
+      });
     }
   }
-})
-
-app.get('/login', function (request, response, next) {
-  response.render('login');
 })
